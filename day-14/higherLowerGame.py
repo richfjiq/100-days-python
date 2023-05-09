@@ -17,12 +17,14 @@ def statements(follower_a, follower_b, guess):
 def game():
   play = True
   current_score = 0
+  b = random.choice(data)
+
   while play:
     print(logo)
-    
-    a = random.choice(data)
+
+    a = b
     b = random.choice(data)
-    if a == b:
+    while a == b:
       b = random.choice(data)
 
     if current_score != 0:
