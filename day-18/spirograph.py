@@ -20,7 +20,6 @@ def draw_circle(deg):
 
 def draw_spirograph(gap):
     degrees = 0
-
     while degrees <= 360:
         tim.color(random_color())
         draw_circle(degrees)
