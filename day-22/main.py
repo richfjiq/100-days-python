@@ -1,5 +1,7 @@
-from turtle import Turtle, Screen
+from turtle import Screen
 from paddle import Paddle
+from ball import Ball
+import time
 
 # 1. Create the screen
 screen = Screen()
@@ -9,9 +11,10 @@ screen.title("Pong")
 screen.tracer(0)
 
 # 2. Create and move a paddle
-paddle_left = Paddle((-350, 0))
 # 3. Create another paddle
+paddle_left = Paddle((-350, 0))
 paddle_right = Paddle((350, 0))
+ball = Ball()
 
 screen.listen()
 screen.onkey(paddle_left.go_up, "w")
@@ -21,7 +24,9 @@ screen.onkey(paddle_right.go_down, "Down")
 
 game_is_on = True
 while game_is_on:
+    time.sleep(0.1)
     screen.update()
+    ball.move()
 
 # 4. Create the ball and make it move
 # 5. Detect collision with wall and bounce
