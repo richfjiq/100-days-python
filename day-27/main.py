@@ -1,13 +1,31 @@
-import tkinter
+from tkinter import *
 
-window = tkinter.Tk()
+window = Tk()
 window.title("My First GUI Program")
 window.minsize(width=500, height=300)
 
-my_label = tkinter.Label(
+my_label = Label(
     text="I Am A Label",
     font=("Arial", 24, "bold"),
 )
-my_label.pack(side="left")
+my_label.pack()
+
+my_label["text"] = "New Text"
+my_label.config(text="New Text")
+
+
+# Button
+def button_clicked():
+    my_label.config(text=f"{input.get()}")
+
+
+button = Button(text="Click Me", command=button_clicked)
+button.pack()
+
+# Entry
+
+input = Entry(width=10)
+input.pack()
+
 
 window.mainloop()
