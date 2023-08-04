@@ -3,13 +3,13 @@ from tkinter import *
 FONT = ("Arial", 24)
 
 window = Tk()
-window.title("Mile to km Converter")
+window.title("Mile to Kilometer Converter")
 window.minsize(width=340, height=150)
 window.config(padx=20, pady=20)
 
 
 def convert_miles():
-    km = round(float(miles_input.get()) * 1.6, 2)
+    km = round(float(miles_input.get()) * 1.609, 3)
     result_label.config(text=f"{km}")
 
 
