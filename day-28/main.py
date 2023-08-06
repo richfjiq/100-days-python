@@ -7,20 +7,50 @@ RED = "#e7305b"
 GREEN = "#9bdeac"
 YELLOW = "#f7f5dd"
 FONT_NAME = "Courier"
+# WORK_MIN = 25
 WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
+reps = 0
+timer = None
+
 
 # ---------------------------- TIMER RESET ------------------------------- #
+def reset_timer():
+    window.after_cancel(timer)
+    canvas.itemconfig(timer_text, text="00:00")
+    title_label.config(text="Timer")
+    checkmark_label.config(text="")
+    global reps
+    reps = 0
+    start_button.config(state="active")
 
 
 # ---------------------------- TIMER MECHANISM ------------------------------- #
 def start_timer():
-    count_down(5 * 60)
+    global reps
+    reps += 1
+
+    work_sec = int(WORK_MIN * 60)
+    short_break_sec = int(SHORT_BREAK_MIN * 60)
+    long_break_sec = LONG_BREAK_MIN * 60
+
+    start_button.config(state="disabled")
+
+    if reps % 8 == 0:
+        title_label.config(text="Break", font=(FONT_NAME, 50), bg=YELLOW, fg=RED)
+        count_down(long_break_sec)
+    elif reps % 2 == 0:
+        title_label.config(text="Break", font=(FONT_NAME, 50), bg=YELLOW, fg=PINK)
+        count_down(short_break_sec)
+    else:
+        title_label.config(text="Work", font=(FONT_NAME, 50), bg=YELLOW, fg=GREEN)
+        count_down(work_sec)
 
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 def count_down(count):
+    # global check_mark
     count_min = math.floor(count / 60)
     count_sec = count % 60
     if count_sec < 10:
@@ -29,7 +59,18 @@ def count_down(count):
     canvas.itemconfig(timer_text, text=f"{count_min}:{count_sec}")
 
     if count > 0:
-        window.after(1000, count_down, count - 1)
+        global timer
+        timer = window.after(1000, count_down, count - 1)
+    else:
+        # if reps % 2 == 0:
+        #     check_mark += "✅"
+        #     checkmark_label.config(text=check_mark)
+        start_timer()
+        marks = ""
+        work_sessions = math.floor(reps / 2)
+        for _ in range(work_sessions):
+            marks += "✅"
+        checkmark_label.config(text=marks)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -48,13 +89,17 @@ timer_text = canvas.create_text(
 )
 canvas.grid(column=1, row=1)
 
-start_button = Button(text="Start", highlightbackground=YELLOW, command=start_timer)
+start_button = Button(
+    text="Start",
+    highlightbackground=YELLOW,
+    command=start_timer,
+)
 start_button.grid(column=0, row=2)
 
-reset_button = Button(text="Reset", highlightbackground=YELLOW)
+reset_button = Button(text="Reset", highlightbackground=YELLOW, command=reset_timer)
 reset_button.grid(column=2, row=2)
 
-checkmark_label = Label(text="✅")
+checkmark_label = Label(bg=YELLOW)
 checkmark_label.grid(column=1, row=3)
 
 window.mainloop()
