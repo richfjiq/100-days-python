@@ -88,7 +88,7 @@ def generate_password():
 
 # ---------------------------------------- SAVE PASSWORD ----------------------------------------
 def save_password():
-    website = website_input.get()
+    website = website_input.get().lower()
     email = email_input.get()
     password = password_input.get()
     new_data = {website: {"email": email, "password": password}}
@@ -117,6 +117,36 @@ def save_password():
             password_input.delete(0, "end")
 
 
+# ---------------------------------------- SEARCH PASSWORD ----------------------------------------
+def find_password():
+    try:
+        website = website_input.get().lower()
+        if website == "":
+            messagebox.showinfo(
+                title="Error",
+                message="Type a website to search on data file.",
+            )
+            return
+
+        with open("data.json", "r") as data_file:
+            data = json.load(data_file)
+            website_data = data[website]
+    except KeyError:
+        messagebox.showerror(
+            title="Oops",
+            message=f"No details for {website.capitalize()} exists",
+        )
+    except FileNotFoundError:
+        messagebox.showerror(title="Error", message="No Data File Found.")
+    else:
+        messagebox.showinfo(
+            title=f"{website.capitalize()}",
+            message=f"Email: {website_data['email']}\nPassword: {website_data['password']}",
+        )
+    finally:
+        website_input.delete(0, "end")
+
+
 # ---------------------------------------- UI SETUP ----------------------------------------
 
 window = Tk()
@@ -137,8 +167,8 @@ password_label = Label(text="Password", bg=WHITE, pady=10)
 password_label.grid(column=0, row=3)
 
 # Entries
-website_input = Entry(width=36)
-website_input.grid(column=1, row=1, columnspan=2)
+website_input = Entry()
+website_input.grid(column=1, row=1)
 website_input.focus()
 email_input = Entry(width=36)
 email_input.grid(column=1, row=2, columnspan=2)
@@ -147,6 +177,10 @@ password_input = Entry(width=21)
 password_input.grid(column=1, row=3)
 
 # Buttons
+search_button = Button(
+    text="Search", width=12, highlightbackground=WHITE, command=find_password
+)
+search_button.grid(column=2, row=1)
 generate_button = Button(
     text="Generate Password", highlightbackground=WHITE, command=generate_password
 )
