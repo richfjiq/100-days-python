@@ -2,19 +2,29 @@ from tkinter import *
 import pandas
 import random
 
-BACKGROUND_COLOR = "#B1DDC6"
 FONT = ("Arial", 40, "italic")
 FONT_BOLD = ("Arial", 60, "bold")
-
-data = pandas.read_csv("data/french_words.csv")
-words_dict = data.to_dict(orient="records")
+BACKGROUND_COLOR = "#B1DDC6"
 current_card = {}
+words_to_learn = {}
+
+try:
+    data = pandas.read_csv("data/words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("data/french_words.csv")
+    words_to_learn = original_data.to_dict(orient="records")
+else:
+    words_to_learn = data.to_dict(orient="records")
 
 
 def next_card():
     global current_card, flip_timer
     window.after_cancel(flip_timer)
-    current_card = random.choice(words_dict)
+    if current_card:
+        words_to_learn.remove(current_card)
+        data = pandas.DataFrame(words_to_learn)
+        data.to_csv("data/words_to_learn.csv", index=False)
+    current_card = random.choice(words_to_learn)
     canvas.itemconfig(card_title, text="French", fill="black")
     canvas.itemconfig(card_word, text=f"{current_card['French']}", fill="black")
     canvas.itemconfig(canvas_image, image=card_front)
