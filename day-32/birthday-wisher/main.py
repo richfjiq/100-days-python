@@ -21,7 +21,7 @@ for birthday in birthdays_data:
         with open(f"./letter_templates/letter_{rand_letter}.txt") as file:
             letter = file.read()
             letter_edited = letter.replace("[NAME]", f"{birthday['name']}")
-        with smtplib.SMTP("smtp.gmail.com") as connection:
+        with smtplib.SMTP(host="smtp.gmail.com", port=587) as connection:
             connection.starttls()
             connection.login(user=MY_EMAIL, password=MY_PASSWORD)
             connection.sendmail(
