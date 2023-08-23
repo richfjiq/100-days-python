@@ -1,7 +1,10 @@
+"""General functions for HTML manipulation."""
 import html
 
 
 class QuizBrain:
+    """Generate the UI."""
+
     def __init__(self, q_list):
         self.question_number = 0
         self.score = 0
@@ -9,9 +12,11 @@ class QuizBrain:
         self.current_question = None
 
     def still_has_questions(self):
+        """Check how many questions left."""
         return self.question_number < len(self.question_list)
 
     def next_question(self):
+        """Show the next question."""
         self.current_question = self.question_list[self.question_number]
         self.question_number += 1
         q_text = html.unescape(self.current_question.text)
@@ -20,12 +25,10 @@ class QuizBrain:
         # self.check_answer(user_answer)
 
     def check_answer(self, user_answer):
+        """Checks the answer."""
         correct_answer = self.current_question.answer
         if user_answer.lower() == correct_answer.lower():
             self.score += 1
-            print("You got it right!")
+            return True
         else:
-            print("That's wrong.")
-
-        print(f"Your current score is: {self.score}/{self.question_number}")
-        print("\n")
+            return False
