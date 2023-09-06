@@ -20,6 +20,18 @@ stock_params = {
     "apikey": STOCK_API_KEY,
 }
 
+news_params = {
+    "apiKey": os.getenv("NEWS_API_KEY"),
+    "qInTitle": COMPANY_NAME,
+}
+
+sns_client = boto3.client(
+    "sns",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name=os.getenv("AWS_REGION"),
+)
+
 response = requests.get(url=STOCK_ENDPOINT, params=stock_params)
 data = response.json()["Time Series (Daily)"]
 data_list = [value for (key, value) in data.items()]
@@ -33,7 +45,25 @@ difference = abs(
     float(yesterday_closing_price) - float(day_before_yesterday_closing_price)
 )
 
-diff_percent = (difference / float(yesterday_closing_price)) * 100
+up_down = None
+if difference > 0:
+    up_down = "🔺"
+else:
+    up_down = "🔻"
 
-if diff_percent > 2:
-    print("Get news")
+diff_percent = round((difference / float(yesterday_closing_price)) * 100)
+
+if abs(diff_percent) > 1:
+    # print("Get news")
+    news_response = requests.get(NEWS_ENDPOINT, params=news_params)
+    articles = news_response.json()["articles"]
+    three_articles = articles[:3]
+
+    formatted_articles = [
+        f"{STOCK_NAME}: {up_down}{diff_percent}%\nHeadline: {article['title']}. \nBrief: {article['description']}"
+        for article in three_articles
+    ]
+
+    for article in formatted_articles:
+        response = sns_client.publish(PhoneNumber="+527351258657", Message=article)
+        print(f"Status Code: {response['ResponseMetadata']['HTTPStatusCode']}")
