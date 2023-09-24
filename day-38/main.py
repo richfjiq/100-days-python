@@ -1,16 +1,26 @@
 import requests
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 
-APP_ID = "14e098eb"
-API_KEY = "53bb2651eaddd9d9d38f9ed48cd5cd3c"
+load_dotenv()
 
-nutritionixt_endpoint = "https://trackapi.nutritionix.com/v2/natural/exercise"
-headers = {"x-app-id": APP_ID, "x-app-key": API_KEY, "x-remote-user-id": "0"}
-
+NUTRITIONIXT_APP_ID = os.getenv("NUTRITIONIXT_APP_ID")
+NUTRITIONIXT_API_KEY = os.getenv("NUTRITIONIXT_API_KEY")
+NUTRITIONIXT_ENDPOINT = os.getenv("NUTRITIONIXT_ENDPOINT")
+SHEETY_ENDPOINT = os.getenv("SHEETY_ENDPOINT")
+SHEETY_USERNAME = os.getenv("SHEETY_USERNAME")
+SHEETY_PASSWORD = os.getenv("SHEETY_PASSWORD")
 GENDER = "male"
 WEIGHT_KG = 78
 HEIGHT_CM = 169
 AGE = 37
+
+headers = {
+    "x-app-id": NUTRITIONIXT_APP_ID,
+    "x-app-key": NUTRITIONIXT_API_KEY,
+    "x-remote-user-id": "0",
+}
 
 query = input("Tell me which exercises you did: ")
 
@@ -26,15 +36,9 @@ today = datetime.now()
 date = today.strftime("%d/%m/%Y")
 time = today.time().strftime("%H:%M:%S")
 
-response = requests.post(url=nutritionixt_endpoint, headers=headers, json=params)
+response = requests.post(url=NUTRITIONIXT_ENDPOINT, headers=headers, json=params)
 response.raise_for_status()
 data = response.json()
-
-sheety_endpoint = (
-    "https://api.sheety.co/9be0467a8435c8ea87080d818f18feac/workoutTracking/workouts"
-)
-SHEETY_USERNAME = "rich86workouts"
-SHEETY_PASSWORD = "dB2d}9XR0/p]"
 
 basic = requests.auth.HTTPBasicAuth(SHEETY_USERNAME, SHEETY_PASSWORD)
 
@@ -48,6 +52,6 @@ for item in data["exercises"]:
             "calories": item["nf_calories"],
         }
     }
-    response = requests.post(url=sheety_endpoint, auth=basic, json=body)
+    response = requests.post(url=SHEETY_ENDPOINT, auth=basic, json=body)
     response.raise_for_status()
     print("Successfully posted :)")
