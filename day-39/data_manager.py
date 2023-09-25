@@ -1,6 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
+from flight_search import FlightSearch
 
 load_dotenv()
 
@@ -14,15 +15,27 @@ basic = requests.auth.HTTPBasicAuth(SHEETY_USERNAME, SHEETY_PASSWORD)
 # This class is responsible for talking to the Google Sheet.
 # def getData(self):
 #     response = requests.get(url=SHEETY_ENDPOINT, auth=basic)
-class DataManager:
+class DataManager(FlightSearch):
     def __init__(self):
-        self.data = []
-        self.getData()
+        super().__init__()
+        self.sheet_data = []
+        self.get_sheety_api_data()
 
-    def getData(self):
+    def get_sheety_api_data(self):
         response = requests.get(url=SHEETY_ENDPOINT, auth=basic)
         response.raise_for_status()
-        self.data = response.json()
+        data = response.json()
+        self.sheet_data = data["prices"]
 
-    def getCitiesData(self):
-        return self.data
+    def get_sheet_data(self):
+        return self.sheet_data
+
+    def update_iata_code(self):
+        for item in self.sheet_data:
+            iata_code = self.get_iata_code(item["city"])
+            body = {"price": {"iataCode": iata_code}}
+            response = requests.put(
+                url=f"{SHEETY_ENDPOINT}/{item['id']}", auth=basic, json=body
+            )
+            response.raise_for_status()
+            print("IATA code successfully updated")
