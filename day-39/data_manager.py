@@ -30,7 +30,7 @@ class DataManager(FlightSearch):
     def get_sheet_data(self):
         return self.sheet_data
 
-    def update_iata_code(self):
+    def update_iata_codes(self):
         for item in self.sheet_data:
             iata_code = self.get_iata_code(item["city"])
             body = {"price": {"iataCode": iata_code}}
