@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SHEETY_ENDPOINT = os.getenv("SHEETY_ENDPOINT")
+SHEETY_USERS_ENDPOINT = os.getenv("SHEETY_USERS_ENDPOINT")
 SHEETY_USERNAME = os.getenv("SHEETY_USERNAME")
 SHEETY_PASSWORD = os.getenv("SHEETY_PASSWORD")
 
@@ -13,7 +13,7 @@ basic = requests.auth.HTTPBasicAuth(SHEETY_USERNAME, SHEETY_PASSWORD)
 
 def create_user(first_name, last_name, email):
     body = {"user": {"firstName": first_name, "lastName": last_name, "email": email}}
-    response = requests.post(url=SHEETY_ENDPOINT, auth=basic, json=body)
+    response = requests.post(url=SHEETY_USERS_ENDPOINT, auth=basic, json=body)
     response.raise_for_status()
     print("User created in Flight Deals Google Sheet")
 
