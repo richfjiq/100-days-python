@@ -1,12 +1,4 @@
 import requests
-import os
-from dotenv import load_dotenv
-from datetime import datetime, timedelta
-
-load_dotenv()
-
-TEQUILA_API = os.getenv("TEQUILA_API")
-TEQUILA_API_KEY = os.getenv("TEQUILA_API_KEY")
 
 
 class FlightData:
@@ -19,6 +11,8 @@ class FlightData:
         destination_airport,
         out_date,
         return_date,
+        stop_overs=0,
+        via_city="",
     ):
         self.price = price
         self.origin_city = origin_city
@@ -27,3 +21,4 @@ class FlightData:
         self.destination_airport = destination_airport
         self.out_date = out_date
         self.return_date = return_date
+        self.stop_overs = stop_overs

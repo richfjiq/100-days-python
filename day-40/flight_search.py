@@ -3,6 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from flight_data import FlightData
+from pprint import pprint
 
 load_dotenv()
 
@@ -48,7 +49,28 @@ class FlightSearch:
             print(f"{destination_city_code}: £{data['price']}")
         except IndexError:
             print(f"No flights found for {destination_city_code}")
-            return None
+            query["max_stopovers"] = 1
+            response_one_stop = requests.get(
+                url=f"{TEQUILA_API}/v2/search", headers=headers, params=query
+            )
+            response_one_stop.raise_for_status()
+            data_one_stop = response_one_stop.json()["data"]
+            if len(data_one_stop) == 0:
+                return None
+            flight_data_one_stop = FlightData(
+                price=data_one_stop[0]["price"],
+                origin_city=data_one_stop[0]["route"][0]["cityFrom"],
+                origin_airport=data_one_stop[0]["route"][0]["flyFrom"],
+                destination_city=data_one_stop[0]["route"][0]["cityTo"],
+                destination_airport=data_one_stop[0]["route"][0]["flyTo"],
+                out_date=data_one_stop[0]["route"][0]["local_departure"].split("T")[0],
+                return_date=data_one_stop[0]["route"][1]["local_departure"].split("T")[
+                    0
+                ],
+                stop_overs=1,
+                via_city=data_one_stop[0]["route"][0]["cityTo"],
+            )
+            return flight_data_one_stop
         else:
             flight_data = FlightData(
                 price=data["price"],

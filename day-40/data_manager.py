@@ -6,6 +6,7 @@ from flight_search import FlightSearch
 load_dotenv()
 
 SHEETY_PRICES_ENDPOINT = os.getenv("SHEETY_PRICES_ENDPOINT")
+SHEETY_USERS_ENDPOINT = os.getenv("SHEETY_USERS_ENDPOINT")
 SHEETY_USERNAME = os.getenv("SHEETY_USERNAME")
 SHEETY_PASSWORD = os.getenv("SHEETY_PASSWORD")
 
@@ -19,7 +20,9 @@ class DataManager(FlightSearch):
     def __init__(self):
         super().__init__()
         self.sheet_data = []
+        self.users_data = []
         self.get_sheety_api_data()
+        self.get_users_data()
 
     def get_sheety_api_data(self):
         response = requests.get(url=SHEETY_PRICES_ENDPOINT, auth=basic)
@@ -39,3 +42,8 @@ class DataManager(FlightSearch):
             )
             response.raise_for_status()
             print("IATA code successfully updated")
+
+    def get_users_data(self):
+        response = requests.get(url=SHEETY_USERS_ENDPOINT, auth=basic)
+        response.raise_for_status()
+        self.users_data = response.json()["users"]

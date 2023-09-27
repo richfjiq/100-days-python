@@ -7,6 +7,7 @@ from notification_manager import NotificationManager
 # This file will need to use the DataManager,FlightSearch, FlightData, NotificationManager classes to achieve the program requirements.
 data_manager = DataManager()
 sheet_data = data_manager.get_sheet_data()
+users_data = data_manager.users_data
 flight_search = FlightSearch()
 notification_manager = NotificationManager()
 
@@ -27,16 +28,18 @@ for destination in sheet_data:
         to_time=six_month_from_today,
     )
 
-    if flight is None:
+    if flight_data is None:
         continue
 
     if flight_data.price < destination["lowestPrice"]:
-        notification_manager.send_notification(
-            price=flight_data.price,
-            departure_city_name=flight_data.origin_city,
-            departure_iata_code=flight_data.origin_airport,
-            arrival_city_name=flight_data.destination_city,
-            arrival_iata_code=flight_data.destination_airport,
-            outbound_date=flight_data.out_date,
-            inbound_date=flight_data.return_date,
-        )
+        for user in users_data:
+            notification_manager.send_emails(
+                price=flight_data.price,
+                departure_city_name=flight_data.origin_city,
+                departure_iata_code=flight_data.origin_airport,
+                arrival_city_name=flight_data.destination_city,
+                arrival_iata_code=flight_data.destination_airport,
+                outbound_date=flight_data.out_date,
+                inbound_date=flight_data.return_date,
+                user_email=user["email"],
+            )

@@ -1,20 +1,17 @@
 import requests
 import boto3
+import smtplib
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-sns_client = boto3.client(
-    "sns",
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    region_name=os.getenv("AWS_REGION"),
-)
+SMTP_EMAIL = os.getenv("SMTP_EMAIL")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
 
 class NotificationManager:
-    def send_notification(
+    def send_emails(
         self,
         price,
         departure_city_name,
@@ -23,7 +20,16 @@ class NotificationManager:
         arrival_iata_code,
         outbound_date,
         inbound_date,
+        user_email,
     ):
-        message = f"Low price alert 🚨! Only £{price} to fly from London - {departure_iata_code} to {arrival_city_name} - {arrival_iata_code}, from {outbound_date} to {inbound_date}"
-        response = sns_client.publish(PhoneNumber="+527351258657", Message=message)
-        print(f"Status Code: {response['ResponseMetadata']['HTTPStatusCode']}")
+        with smtplib.SMTP("smtp.gmail.com") as connection:
+            # Make connection secure
+            connection.starttls()
+            connection.login(user=SMTP_EMAIL, password=SMTP_PASSWORD)
+            connection.sendmail(
+                from_addr=SMTP_EMAIL,
+                to_addrs=user_email,
+                msg=f"Subject:New Low Price Flight!\n\nLow price alert 🚨! Only £{price} to fly from London - {departure_iata_code} to {arrival_city_name} - {arrival_iata_code}, from {outbound_date} to {inbound_date}".encode(
+                    "utf-8"
+                ),
+            )
