@@ -3,8 +3,12 @@ from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
 import lxml
+import smtplib
 
 load_dotenv()
+
+MY_EMAIL = os.getenv("MY_EMAIL")
+PASSWORD = os.getenv("PASSWORD")
 
 # AMAZON_URL = os.getenv("AMAZON_URL")
 # USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
@@ -44,3 +48,15 @@ soup = BeautifulSoup(response.content, "lxml")
 price = soup.find(class_="a-offscreen").get_text()
 price_without_currency = price.split("$")[1]
 price_as_float = float(price_without_currency)
+
+if price_as_float < 100:
+    with smtplib.SMTP("smtp.gmail.com") as connection:
+        connection.starttls()
+        connection.login(user=MY_EMAIL, password=PASSWORD)
+        connection.sendmail(
+            from_addr=MY_EMAIL,
+            to_addrs="rfiq1986@hotmail.com",
+            msg=f"Instant Pot Duo Plus 9-in-1 Electric Pressure Cooker, Slow Cooker, Rice Cooker, Steamer, Sauté, Yogurt Maker, Warmer & Sterilizer, Includes App With Over 800 Recipes, Stainless Steel, 3 Quart is now ${price_as_float}".encode(
+                "utf-8"
+            ),
+        )
