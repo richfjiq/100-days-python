@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from pprint import pprint
 
 # Keep Chrome browser open after program finishes
 chrome_options = webdriver.ChromeOptions()
@@ -26,10 +27,27 @@ driver.get("https://www.python.org/")
 # )
 # print(documentation_link.text)
 
-bug_link = driver.find_element(
-    By.XPATH, value='//*[@id="site-map"]/div[2]/div/ul/li[3]/a'
-)
-print(bug_link.text)
+# bug_link = driver.find_element(
+#     By.XPATH, value='//*[@id="site-map"]/div[2]/div/ul/li[3]/a'
+# )
+# print(bug_link.text)
+
+# ++++++++++++++++++++++++++++++++++++ SCRAPPING UPCOMING EVENTS ++++++++++++++++++++++++++++++++++++
+
+upcoming_events = driver.find_element(
+    By.CSS_SELECTOR, value=".event-widget ul"
+).find_elements(By.CSS_SELECTOR, value="li")
+
+events_dictionary = {}
+
+for i in range(len(upcoming_events)):
+    item = upcoming_events[i]
+    events_dictionary[i] = {
+        "time": item.find_element(By.TAG_NAME, value="time").text,
+        "name": item.find_element(By.TAG_NAME, value="a").text,
+    }
+
+pprint(events_dictionary)
 
 # driver.close()
 driver.quit()
