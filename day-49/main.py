@@ -18,10 +18,38 @@ time.sleep(1)
 
 username_input = driver.find_element(By.CSS_SELECTOR, value="input#username")
 password_input = driver.find_element(By.CSS_SELECTOR, value="input#password")
-# button_login = driver.find_element(
-#     By.CSS_SELECTOR, value="div.login__form_action_container button"
-# )
+button_login = driver.find_element(
+    By.CSS_SELECTOR, value="div.login__form_action_container button"
+)
 
 username_input.send_keys("rfjiqdevcode@gmail.com")
 password_input.send_keys("Wd37N'2Su(55")
-# button_login.click()
+button_login.click()
+
+easy_apply_button = driver.find_element(
+    By.CSS_SELECTOR, value="div.jobs-apply-button--top-card button"
+)
+easy_apply_button.click()
+
+time.sleep(0.5)
+
+next_button = driver.find_element(By.CSS_SELECTOR, value="footer div button")
+next_button.click()
+
+time.sleep(0.5)
+
+review_button = driver.find_element(
+    By.CSS_SELECTOR, value="button[aria-label='Revisar tu solicitud']"
+)
+review_button.click()
+
+time.sleep(0.5)
+
+send_button = driver.find_element(
+    By.CSS_SELECTOR, value="button[aria-label='Enviar solicitud']"
+)
+send_button.click()
+
+time.sleep(5)
+
+driver.quit()
