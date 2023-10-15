@@ -30,16 +30,38 @@ login_facebook_button.click()
 
 time.sleep(2)
 
-email_input = driver.find_element(
-    By.CSS_SELECTOR, value="div[id='email_container div input']"
-)
-password_input = driver.find_element(
-    By.CSS_SELECTOR, value="div[class='clearfix form_row'] div input[id='pass']"
-)
-login_facebook_modal = driver.find_element(
-    By.CSS_SELECTOR, value="div[id='buttons'] label input"
-)
+base_window = driver.window_handles[0]
+fb_login_window = driver.window_handles[1]
+driver.switch_to.window(fb_login_window)
+
+email_input = driver.find_element(By.XPATH, value='//*[@id="email"]')
+password_input = driver.find_element(By.XPATH, value='//*[@id="pass"]')
 
 email_input.send_keys(EMAIL)
 password_input.send_keys(PASSWORD)
-login_facebook_modal.click()
+password_input.send_keys(Keys.ENTER)
+
+driver.switch_to.window(base_window)
+
+time.sleep(5)
+
+allow_location = driver.find_element(
+    By.XPATH,
+    value='//*[@id="u-1622372915"]/main/div[1]/div/div/div[3]/button[1]/div[2]/div[2]',
+)
+allow_location.click()
+
+time.sleep(2)
+
+enable_notifications = driver.find_element(
+    By.XPATH,
+    value='//*[@id="u-1622372915"]/main/div[1]/div/div/div[3]/button[1]/div[2]/div[2]',
+)
+enable_notifications.click()
+
+time.sleep(1)
+
+accept_cookies = driver.find_element(
+    By.XPATH, value='//*[@id="u106008161"]/div/div[2]/div/div/div[1]/div[1]/button'
+)
+accept_cookies.click()
