@@ -65,3 +65,13 @@ accept_cookies = driver.find_element(
     By.XPATH, value='//*[@id="u106008161"]/div/div[2]/div/div/div[1]/div[1]/button'
 )
 accept_cookies.click()
+
+for n in range(100):
+    time.sleep(1)
+    swift_left_button = driver.find_element(
+        By.XPATH,
+        value='//*[@id="u106008161"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[4]/div/div[2]',
+    )
+    swift_left_button.click()
+
+print("Bot finished 100 dislikes :)")
