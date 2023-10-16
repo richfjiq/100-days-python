@@ -16,16 +16,18 @@ TWITTER_USERNAME = os.getenv("TWITTER_USERNAME")
 
 class InternetSpeedTwitterBot:
     def __init__(self):
-        self.chrome_options = webdriver.ChromeOptions()
-        self.chrome_options.add_experimental_option("detach", True)
-        self.driver = webdriver.Chrome(options=self.chrome_options)
+        self.down = 0
+        self.up = 0
 
     def get_internet_speed(self):
-        self.driver.get("https://www.speedtest.net/")
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_experimental_option("detach", True)
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get("https://www.speedtest.net/")
 
-        # time.sleep(1)
+        time.sleep(3)
 
-        go_button = self.driver.find_element(
+        go_button = driver.find_element(
             By.XPATH,
             value='//*[@id="container"]/div/div[3]/div/div/div/div[2]/div[3]/div[1]/a',
         )
@@ -33,32 +35,35 @@ class InternetSpeedTwitterBot:
 
         time.sleep(42)
 
-        speed_down = self.driver.find_element(
+        speed_down = driver.find_element(
             By.XPATH,
             value='//*[@id="container"]/div/div[3]/div/div/div/div[2]/div[3]/div[3]/div/div[3]/div/div/div[2]/div[1]/div[1]/div/div[2]/span',
         ).text
+        down = speed_down
 
-        print(f"download speed: {speed_down}")
-
-        speed_up = self.driver.find_element(
+        speed_up = driver.find_element(
             By.XPATH,
             value='//*[@id="container"]/div/div[3]/div/div/div/div[2]/div[3]/div[3]/div/div[3]/div/div/div[2]/div[1]/div[2]/div/div[2]/span',
         ).text
+        up = speed_up
 
-        print(f"upload speed: {speed_up}")
+        driver.quit()
 
     def tweet_at_provider(self):
-        self.driver.get("https://twitter.com/i/flow/login")
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_experimental_option("detach", True)
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get("https://twitter.com/i/flow/login")
 
         time.sleep(3)
 
-        email_input = self.driver.find_element(
+        email_input = driver.find_element(
             By.XPATH,
             value='//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input',
         )
         email_input.send_keys(TWITTER_EMAIL)
 
-        next_button = self.driver.find_element(
+        next_button = driver.find_element(
             By.XPATH,
             value='//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]',
         )
@@ -66,13 +71,13 @@ class InternetSpeedTwitterBot:
 
         time.sleep(3)
 
-        username_input = self.driver.find_element(
+        username_input = driver.find_element(
             By.XPATH,
             value='//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input',
         )
         username_input.send_keys(TWITTER_USERNAME)
 
-        second_next_button = self.driver.find_element(
+        second_next_button = driver.find_element(
             By.XPATH,
             value='//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div',
         )
@@ -80,14 +85,42 @@ class InternetSpeedTwitterBot:
 
         time.sleep(3)
 
-        password_input = self.driver.find_element(
+        password_input = driver.find_element(
             By.XPATH,
             value='//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input',
         )
         password_input.send_keys(TWITTER_PASSWORD)
 
-        login_button = self.driver.find_element(
+        login_button = driver.find_element(
             By.XPATH,
             value='//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div',
         )
         login_button.click()
+
+        time.sleep(2)
+
+        new_twitter_modal = driver.find_element(
+            By.XPATH,
+            value='//*[@id="react-root"]/div/div/div[2]/header/div/div/div/div[1]/div[3]/a/div',
+        )
+        new_twitter_modal.click()
+
+        time.sleep(1)
+
+        textarea = driver.find_element(
+            By.XPATH,
+            value='//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div/div[3]/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div/div/div/div/div/div[2]/div/div/div/div/label/div[1]/div/div/div/div/div/div/div/div',
+        )
+        textarea.send_keys(
+            f"Hey @izzi_mx, Why is my internet speed {self.down} down / {self.up} up when I paid for 100 down / 10 up?"
+        )
+
+        post_twitter = driver.find_element(
+            By.XPATH,
+            value='//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div/div[3]/div[2]/div[1]/div/div/div/div[2]/div[2]/div/div/div[2]/div[4]',
+        )
+        post_twitter.click()
+
+        time.sleep(2)
+
+        driver.quit()
