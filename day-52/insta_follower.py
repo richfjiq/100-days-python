@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementClickInterceptedException
 import time
 import os
 from dotenv import load_dotenv
@@ -9,6 +10,7 @@ load_dotenv()
 
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
+SIMILAR_ACCOUNT = "history"
 
 
 class InstaFollower:
@@ -36,16 +38,32 @@ class InstaFollower:
         )
         login_button.click()
 
-        time.sleep(4)
-
-        notifications_off = self.driver.find_element(
-            By.XPATH,
-            value="/html/body/div[3]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/button[2]",
-        )
-        notifications_off.click()
-
     def find_followers(self):
-        pass
+        time.sleep(5)
+
+        self.driver.get(f"https://www.instagram.com/{SIMILAR_ACCOUNT}")
+
+        time.sleep(3)
+
+        followers_button = self.driver.find_elements(
+            By.CSS_SELECTOR,
+            value="header section ul li",
+        )[1]
+        followers_button.click()
 
     def follow(self):
-        pass
+        time.sleep(3)
+
+        users = self.driver.find_elements(
+            By.CSS_SELECTOR, value="button[class='_acan _acap _acas _aj1-']"
+        )
+
+        for user in users:
+            try:
+                user.click()
+                time.sleep(8)
+            except ElementClickInterceptedException:
+                cancel = self.driver.find_element(
+                    By.CSS_SELECTOR, value="button[class='_a9-- _a9_1']"
+                )
+                cancel.click()
