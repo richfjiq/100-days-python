@@ -41,3 +41,10 @@ class FillForm:
             By.XPATH, value='//*[@id="mG61Hd"]/div[2]/div/div[3]/div[1]/div[1]/div'
         )
         send_button.click()
+
+        time.sleep(3)
+
+        another_response = self.driver.find_element(
+            By.XPATH, value="/html/body/div[1]/div[2]/div[1]/div/div[4]/a"
+        )
+        another_response.click()
