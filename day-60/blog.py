@@ -1,7 +1,15 @@
 from flask import Flask, render_template, request
 import requests
+import os
+from dotenv import load_dotenv
+import smtplib
+
+load_dotenv()
 
 app = Flask(__name__)
+
+MY_EMAIL = os.getenv("MY_EMAIL")
+PASSWORD = os.getenv("PASSWORD")
 
 
 @app.route("/")
@@ -44,6 +52,14 @@ def contact():
         phone = request.form.get("phone")
         message = request.form.get("message")
         print(name, email, phone, message)
+        with smtplib.SMTP("smtp.gmail.com") as connection:
+            connection.starttls()
+            connection.login(user=MY_EMAIL, password=PASSWORD)
+            connection.sendmail(
+                from_addr=MY_EMAIL,
+                to_addrs=MY_EMAIL,
+                msg=f"Subject:User from Blog Post\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}",
+            )
         return render_template("contact.html", message="Successfully sent message")
     else:
         return render_template("contact.html")
