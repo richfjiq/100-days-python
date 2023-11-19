@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
@@ -26,7 +26,8 @@ Bootstrap5(app)
 class CafeForm(FlaskForm):
     cafe = StringField("Cafe name", validators=[DataRequired()])
     cafe_location = StringField(
-        "Cafe Location on Google Maps (URL)", validators=[DataRequired(), URL()]
+        "Cafe Location on Google Maps (URL)",
+        validators=[DataRequired(), URL(require_tld=True, message="Invalid URL")],
     )
     opening = StringField("Opening Time e.g. 8 AM", validators=[DataRequired()])
     closing = StringField("Closing Time e.g. 8 AM", validators=[DataRequired()])
@@ -59,8 +60,23 @@ def home():
 @app.route("/add", methods=["GET", "POST"])
 def add_cafe():
     form = CafeForm()
+
     if form.validate_on_submit():
-        print("True")
+        cafe = form.cafe.data
+        cafe_location = form.cafe_location.data
+        opening = form.opening.data
+        closing = form.closing.data
+        rating = form.rating.data
+        wifi = form.wifi.data
+        power = form.power.data
+
+        with open("cafe-data.csv", "a", encoding="utf-8") as data_file:
+            data_file.write(
+                f"\n{cafe},{cafe_location},{opening},{closing},{rating},{wifi},{power}"
+            )
+            data_file.close()
+
+        return redirect(url_for("cafes"))
     # Exercise:
     # Make the form write a new row into cafe-data.csv
     # with   if form.validate_on_submit()
