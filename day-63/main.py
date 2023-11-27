@@ -30,6 +30,7 @@ class BookForm(FlaskForm):
     rating = SelectField(
         "Rating", choices=("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
     )
+    submit = SubmitField("Submit")
 
 
 @app.route("/")
@@ -44,15 +45,15 @@ def add():
 
     if form.validate_on_submit():
         book_data = {
-            "title": form.name,
-            "author": form.author,
-            "rating": int(form.rating),
+            "title": form.name.data,
+            "author": form.author.data,
+            "rating": int(form.rating.data),
         }
 
         all_books.append(book_data)
 
         return redirect(url_for("home"))
-    return render_template("add.html")
+    return render_template("add.html", form=form)
 
 
 if __name__ == "__main__":
