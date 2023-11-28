@@ -8,14 +8,14 @@
     <h1>My Library</h1>
     <ul>
       {% if books|length == 0 %}
-        <p>Library is empty.</p>
-      {% else %}
-        {% for book in books %}
-          <li>
-            {{ book.title }} - {{ book.author }} - {{ rating }}/10
-          </li>
-        {% endfor %}
-      {% endif %}
+      <p>Library is empty.</p>
+      {% else %} {% for book in books %}
+      <li>
+        <a href="{{ url_for('delete', id=book.id) }}">Delete</a>
+        {{ book.title }} - {{ book.author }} - {{ book.rating }}/10
+        <a href="{{ url_for('edit', num=book.id) }}">Edit Rating</a>
+      </li>
+      {% endfor %} {% endif %}
     </ul>
 
     <a href="{{ url_for('add') }}">Add New Book</a>
