@@ -40,19 +40,25 @@ class Movie(db.Model):
     title: Mapped[VARCHAR] = mapped_column(VARCHAR(250), unique=True, nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[VARCHAR] = mapped_column(VARCHAR(350), nullable=False)
-    rating: Mapped[VARCHAR] = mapped_column(Float, nullable=False)
-    ranking: Mapped[VARCHAR] = mapped_column(Integer, nullable=False)
+    rating: Mapped[Float] = mapped_column(Float, nullable=False)
+    ranking: Mapped[Integer] = mapped_column(Integer, nullable=False)
     review: Mapped[VARCHAR] = mapped_column(VARCHAR(250), nullable=False)
     image_url: Mapped[VARCHAR] = mapped_column(VARCHAR(250), nullable=False)
 
 
+class EditForm(FlaskForm):
+    rating = StringField("Your Rating Out of 10 e.g. 7.5", validators=[DataRequired()])
+    review = StringField("Your Review", validators=[DataRequired()])
+    submit = SubmitField("Done")
+
+
 @app.route("/")
 def home():
-    # create the database
+    # # create the database
     # with app.app_context():
     #     db.create_all()
 
-    # adds two movies to the database
+    # # adds two movies to the database
     # with app.app_context():
     #     new_movie1 = Movie(
     #         title="Phone Booth",
@@ -74,7 +80,31 @@ def home():
     #     )
     #     db.session.add_all([new_movie1, new_movie2])
     #     db.session.commit()
-    return render_template("index.html")
+
+    movies = (
+        db.session.execute(db.select(Movie).order_by(Movie.ranking)).scalars().all()
+    )
+
+    return render_template("index.html", movies=movies)
+
+
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+def edit(id):
+    form = EditForm()
+    movie = db.get_or_404(Movie, id)
+
+    if form.validate_on_submit():
+        with app.app_context():
+            movie_to_update = db.session.execute(
+                db.select(Movie).where(Movie.id == id)
+            ).scalar()
+            movie_to_update.rating = form.rating.data
+            movie_to_update.review = form.review.data
+            db.session.commit()
+
+        return redirect(url_for("home"))
+
+    return render_template("edit.html", form=form, movie=movie)
 
 
 if __name__ == "__main__":
