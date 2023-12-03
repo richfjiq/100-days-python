@@ -7,6 +7,14 @@ from wtforms.validators import DataRequired
 import requests
 from sqlalchemy import Integer, VARCHAR, Float
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TMDB_TOKEN = os.getenv("TMDB_TOKEN")
+
+headers = {"accept": "application/json", "Authorization": f"Bearer {TMDB_TOKEN}"}
 
 """
 Red underlines? Install the required packages first:
@@ -50,6 +58,11 @@ class EditForm(FlaskForm):
     rating = StringField("Your Rating Out of 10 e.g. 7.5", validators=[DataRequired()])
     review = StringField("Your Review", validators=[DataRequired()])
     submit = SubmitField("Done")
+
+
+class AddForm(FlaskForm):
+    title = StringField("Movie Title", validators=[DataRequired()])
+    submit = SubmitField("Add Movie")
 
 
 @app.route("/")
@@ -113,6 +126,49 @@ def delete():
     movie_to_delete = db.get_or_404(Movie, movie_id)
     db.session.delete(movie_to_delete)
     db.session.commit()
+    return redirect(url_for("home"))
+
+
+@app.route("/add", methods=["GET", "POST"])
+def add():
+    form = AddForm()
+
+    if form.validate_on_submit():
+        movie_title = form.title.data
+        print(movie_title)
+        response = requests.get(
+            f"https://api.themoviedb.org/3/search/movie?query={movie_title}",
+            headers=headers,
+        )
+        response.raise_for_status()
+        data = response.json()["results"]
+        print(data)
+        return render_template("select.html", options=data)
+
+    return render_template("add.html", form=form)
+
+
+@app.route("/find")
+def find():
+    movie_id = request.args.get("id")
+    response = requests.get(
+        f"https://api.themoviedb.org/3/movie/{movie_id}", headers=headers
+    )
+    response.raise_for_status()
+    data = response.json()
+
+    with app.app_context():
+        movie = Movie(
+            title=data["title"],
+            year=data["release_date"][0:4],
+            description=data["overview"],
+            rating=0,
+            ranking=0,
+            review="None",
+            image_url=f"https://image.tmdb.org/t/p/w500/{data['poster_path']}",
+        )
+        db.session.add(movie)
+        db.session.commit()
     return redirect(url_for("home"))
 
 
