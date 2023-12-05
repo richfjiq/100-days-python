@@ -104,6 +104,42 @@ def find_a_cafe():
 
 
 # HTTP POST - Create Record
+@app.route("/add", methods=["POST"])
+def add():
+    # sending body - x-www-form-urlencoded in Postman
+    # new_cafe = Cafe(
+    #     name=request.form.get("name"),
+    #     map_url=request.form.get("map_url"),
+    #     img_url=request.form.get("img_url"),
+    #     location=request.form.get("loc"),
+    #     has_sockets=bool(request.form.get("sockets")),
+    #     has_toilet=bool(request.form.get("toilet")),
+    #     has_wifi=bool(request.form.get("wifi")),
+    #     can_take_calls=bool(request.form.get("calls")),
+    #     seats=request.form.get("seats"),
+    #     coffee_price=request.form.get("coffee_price"),
+    # )
+    # db.session.add(new_cafe)
+    # db.session.commit()
+
+    # sending body - raw - JSON in Postman
+    data = request.json
+    new_cafe = Cafe(
+        name=data["name"],
+        map_url=data["map_url"],
+        img_url=data["img_url"],
+        location=data["location"],
+        seats=data["seats"],
+        has_toilet=data["has_toilet"],
+        has_wifi=data["has_wifi"],
+        has_sockets=data["has_sockets"],
+        can_take_calls=data["can_take_calls"],
+        coffee_price=data["coffee_price"],
+    )
+    db.session.add(new_cafe)
+    db.session.commit()
+    return jsonify(response=({"success": "Successfully added the new cafe."}))
+
 
 # HTTP PUT/PATCH - Update Record
 
