@@ -58,6 +58,7 @@ def home():
     return render_template("index.html")
 
 
+# http://127.0.0.1:5000/random
 @app.route("/random")
 def get_random():
     cafes = db.session.execute(db.select(Cafe)).scalars().all()
@@ -80,6 +81,7 @@ def get_random():
     return jsonify(cafe=random_cafe.to_dict())
 
 
+# http://127.0.0.1:5000/all
 @app.route("/all")
 def gel_all_cafes():
     all_cafes = db.session.execute(db.select(Cafe).order_by(Cafe.name)).scalars().all()
@@ -87,6 +89,7 @@ def gel_all_cafes():
 
 
 # HTTP GET - Read Record
+# http://127.0.0.1:5000/search?loc=South%20Kensington
 @app.route("/search")
 def find_a_cafe():
     location = request.args.get("loc")
@@ -104,6 +107,7 @@ def find_a_cafe():
 
 
 # HTTP POST - Create Record
+# http://127.0.0.1:5000/add
 @app.route("/add", methods=["POST"])
 def add():
     # sending body - x-www-form-urlencoded in Postman
@@ -142,6 +146,30 @@ def add():
 
 
 # HTTP PUT/PATCH - Update Record
+# http://127.0.0.1:5000/update-price/22?new_price=£2.80
+@app.route("/update-price/<int:id>", methods=["PATCH"])
+def update_price(id):
+    new_price = request.args.get("new_price")
+
+    cafe_to_update = db.session.execute(db.select(Cafe).where(Cafe.id == id)).scalar()
+    print(cafe_to_update)
+
+    if cafe_to_update == None:
+        return (
+            jsonify(
+                error=(
+                    {
+                        "Not Found": "Sorry a cafe with that id was not found in the database."
+                    }
+                )
+            ),
+            404,
+        )
+    else:
+        cafe_to_update.coffee_price = new_price
+        db.session.commit()
+        return jsonify({"success": "Successfully updated the price."})
+
 
 # HTTP DELETE - Delete Record
 
