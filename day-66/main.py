@@ -87,6 +87,21 @@ def gel_all_cafes():
 
 
 # HTTP GET - Read Record
+@app.route("/search")
+def find_a_cafe():
+    location = request.args.get("loc")
+    cafes_in_location = (
+        db.session.execute(db.select(Cafe).where(Cafe.location == location))
+        .scalars()
+        .all()
+    )
+    if len(cafes_in_location) == 0:
+        return jsonify(
+            error={"Not Found": "Sorry, we don't have a cafe at the location."}
+        )
+    else:
+        return jsonify(cafes=[cafe.to_dict() for cafe in cafes_in_location])
+
 
 # HTTP POST - Create Record
 
