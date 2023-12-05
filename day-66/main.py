@@ -80,6 +80,12 @@ def get_random():
     return jsonify(cafe=random_cafe.to_dict())
 
 
+@app.route("/all")
+def gel_all_cafes():
+    all_cafes = db.session.execute(db.select(Cafe).order_by(Cafe.name)).scalars().all()
+    return jsonify(cafes=[cafe.to_dict() for cafe in all_cafes])
+
+
 # HTTP GET - Read Record
 
 # HTTP POST - Create Record
