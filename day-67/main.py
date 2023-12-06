@@ -55,6 +55,15 @@ class BlogPostForm(FlaskForm):
     submit = SubmitField("Create")
 
 
+class UpdatePostForm(FlaskForm):
+    title = StringField("Blog Post Title", validators=[DataRequired()])
+    subtitle = StringField("Subtitle", validators=[DataRequired()])
+    author = StringField("Your Name", validators=[DataRequired()])
+    img_url = StringField("Blog Image URL", validators=[DataRequired()])
+    body = CKEditorField("Blog Content")
+    submit = SubmitField("Create")
+
+
 @app.route("/")
 def get_all_posts():
     # TODO: Query the database for all the posts. Convert the data to a python list.
@@ -80,12 +89,12 @@ def add_new_post():
     if form.validate_on_submit():
         with app.app_context():
             blog = BlogPost(
-                title = form.title.data,
-                subtitle = form.subtitle.data,
-                author = form.author.data,
-                img_url = form.img_url.data,
-                body = form.body.data,
-                date = date.today().strftime("%B %d, %Y")
+                title=form.title.data,
+                subtitle=form.subtitle.data,
+                author=form.author.data,
+                img_url=form.img_url.data,
+                body=form.body.data,
+                date=date.today().strftime("%B %d, %Y"),
             )
             db.session.add(blog)
             db.session.commit()
@@ -96,6 +105,31 @@ def add_new_post():
 
 
 # TODO: edit_post() to change an existing blog post
+@app.route("/edit-post/<int:id>", methods=["GET", "POST"])
+def edit_post(id):
+    post_to_update = db.session.execute(
+        db.select(BlogPost).where(BlogPost.id == id)
+    ).scalar()
+    # post_to_update = db.get_or_404(BlogPost, id)
+    edit_form = UpdatePostForm(
+        title=post_to_update.title,
+        subtitle=post_to_update.subtitle,
+        img_url=post_to_update.img_url,
+        author=post_to_update.author,
+        body=post_to_update.body,
+    )
+
+    if edit_form.validate_on_submit():
+        post_to_update.title = edit_form.title.data
+        post_to_update.subtitle = edit_form.subtitle.data
+        post_to_update.author = edit_form.author.data
+        post_to_update.img_url = edit_form.img_url.data
+        post_to_update.body = edit_form.body.data
+        db.session.commit()
+        return redirect(url_for("show_post", post_id=post_to_update.id))
+
+    return render_template("make-post.html", form=edit_form, edit=True)
+
 
 # TODO: delete_post() to remove a blog post from the database
 
