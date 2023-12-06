@@ -21,6 +21,7 @@ This will install the packages from the requirements.txt for this project.
 """
 
 app = Flask(__name__)
+ckeditor = CKEditor(app)
 app.config["SECRET_KEY"] = "8BYkEfBA6O6donzWlSihBXox7C0sKR6b"
 Bootstrap5(app)
 
@@ -45,22 +46,54 @@ with app.app_context():
     db.create_all()
 
 
+class BlogPostForm(FlaskForm):
+    title = StringField("Blog Post Title", validators=[DataRequired()])
+    subtitle = StringField("Subtitle", validators=[DataRequired()])
+    author = StringField("Your Name", validators=[DataRequired()])
+    img_url = StringField("Blog Image URL", validators=[DataRequired()])
+    body = CKEditorField("Blog Content")
+    submit = SubmitField("Create")
+
+
 @app.route("/")
 def get_all_posts():
     # TODO: Query the database for all the posts. Convert the data to a python list.
-    posts = []
+    posts = (
+        db.session.execute(db.select(BlogPost).order_by(BlogPost.date)).scalars().all()
+    )
     return render_template("index.html", all_posts=posts)
 
 
 # TODO: Add a route so that you can click on individual posts.
-@app.route("/")
+@app.route("/post/<int:post_id>")
 def show_post(post_id):
     # TODO: Retrieve a BlogPost from the database based on the post_id
-    requested_post = "Grab the post from your database"
+    requested_post = db.get_or_404(BlogPost, post_id)
     return render_template("post.html", post=requested_post)
 
 
 # TODO: add_new_post() to create a new blog post
+@app.route("/new-post", methods=["GET", "POST"])
+def add_new_post():
+    form = BlogPostForm()
+
+    if form.validate_on_submit():
+        with app.app_context():
+            blog = BlogPost(
+                title = form.title.data,
+                subtitle = form.subtitle.data,
+                author = form.author.data,
+                img_url = form.img_url.data,
+                body = form.body.data,
+                date = date.today().strftime("%B %d, %Y")
+            )
+            db.session.add(blog)
+            db.session.commit()
+
+            return redirect(url_for("get_all_posts"))
+
+    return render_template("make-post.html", form=form)
+
 
 # TODO: edit_post() to change an existing blog post
 
