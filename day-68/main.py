@@ -70,7 +70,9 @@ def register():
         user = User(
             name=form.name.data,
             email=form.email.data,
-            password=form.password.data,
+            password=generate_password_hash(
+                form.password.data, method="pbkdf2", salt_length=8
+            ),
         )
         db.session.add(user)
         db.session.commit()
@@ -96,8 +98,8 @@ def logout():
 
 @app.route("/download")
 def download():
-    pass
+    return send_from_directory("static/files", "cheat_sheet.pdf", as_attachment=True)
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=4000)
