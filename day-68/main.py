@@ -21,10 +21,20 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Email
 from flask_bootstrap import Bootstrap5
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "secret-key-goes-here"
+app.config["SECRET_KEY"] = SECRET_KEY
 Bootstrap5(app)
+
+# Flask-Login -- Login Manager
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 # CONNECT TO DB
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
@@ -32,29 +42,27 @@ db = SQLAlchemy()
 db.init_app(app)
 
 
+# Create a user_loader callback
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
+
+
 # CREATE TABLE IN DB
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(1000))
 
 
-class RegisterForm(FlaskForm):
-    name = StringField(
-        "", validators=[DataRequired()], render_kw={"placeholder": "Name"}
-    )
-    email = StringField(
-        "", validators=[DataRequired(), Email()], render_kw={"placeholder": "Email"}
-    )
-    password = PasswordField(
-        "", validators=[DataRequired()], render_kw={"placeholder": "Password"}
-    )
-    submit = SubmitField("Sign me up")
-
-
 with app.app_context():
     db.create_all()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
 
 
 @app.route("/")
@@ -64,39 +72,61 @@ def home():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    form = RegisterForm()
-
-    if form.validate_on_submit():
+    if request.method == "POST":
         user = User(
-            name=form.name.data,
-            email=form.email.data,
+            name=request.form.get("name"),
+            email=request.form.get("email"),
             password=generate_password_hash(
-                form.password.data, method="pbkdf2", salt_length=8
+                request.form.get("password"), method="pbkdf2", salt_length=8
             ),
         )
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for("login"))
 
-    return render_template("register.html", form=form)
+        # Log in and authenticate user after adding details to database.
+        login_user(user)
+
+        return redirect(url_for("secrets"))
+
+    return render_template("register.html")
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # Find user by email entered.
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user = result.scalar()
+
+        # Check stored password hash against entered password hashed
+        if check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for("secrets"))
+
     return render_template("login.html")
 
 
+# Only logged-in users can access the route
 @app.route("/secrets")
+@login_required
 def secrets():
-    return render_template("secrets.html")
+    print(current_user.name)
+    # Passing the name from the current_user
+    return render_template("secrets.html", name=current_user.name)
 
 
 @app.route("/logout")
 def logout():
-    pass
+    logout_user()
+    return redirect(url_for("home"))
 
 
+# Only logged-in users can download the pdf
 @app.route("/download")
+@login_required
 def download():
     return send_from_directory("static/files", "cheat_sheet.pdf", as_attachment=True)
 
