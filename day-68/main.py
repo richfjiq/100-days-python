@@ -80,19 +80,24 @@ def register():
                 request.form.get("password"), method="pbkdf2", salt_length=8
             ),
         )
-        db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except:
+            error = "You've already signed up with that email, log in instead!"
+            return redirect(url_for("login", error=error))
+        else:
+            # Log in and authenticate user after adding details to database.
+            login_user(user)
 
-        # Log in and authenticate user after adding details to database.
-        login_user(user)
-
-        return redirect(url_for("secrets"))
+            return redirect(url_for("secrets"))
 
     return render_template("register.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    error = request.args.get("error")
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -100,13 +105,19 @@ def login():
         # Find user by email entered.
         result = db.session.execute(db.select(User).where(User.email == email))
         user = result.scalar()
+        if user == None:
+            error = "This email does not exist, please try again."
+        else:
+            print(user)
+            # Check stored password hash against entered password hashed
+            if check_password_hash(user.password, password):
+                login_user(user)
+                flash("You were successfully logged in")
+                return redirect(url_for("secrets"))
+            else:
+                error = "Password incorrect, please try again."
 
-        # Check stored password hash against entered password hashed
-        if check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for("secrets"))
-
-    return render_template("login.html")
+    return render_template("login.html", error=error)
 
 
 # Only logged-in users can access the route
